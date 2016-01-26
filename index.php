@@ -8,18 +8,18 @@ if(!isset($_GET['secret']) || $_GET['secret']!='owned')	// Secret Password
 
 	$array = array
 	( 
-		'date'		=> date("Y-m-d H:i:s"),
-		'time'		=> time(),
+		'date'	=> date("Y-m-d H:i:s"),
+		'time'	=> time(),
 	);
 
 	if (isset($_SERVER["REMOTE_ADDR"])) 	$array['ip']		=$_SERVER["REMOTE_ADDR"];
 	if (isset($_SERVER["REQUEST_URI"])) 	$array['uri']		=$_SERVER["REQUEST_URI"];
 	if (isset($_SERVER["HTTP_USER_AGENT"])) $array['agent']		=$_SERVER["HTTP_USER_AGENT"];
 	if (isset($_SERVER["HTTP_REFERER"])) 	$array['referer']	=$_SERVER["HTTP_REFERER"];
-	if (isset($_SERVER["HTTP_HOST"])) 		$array['domain']	=$_SERVER["HTTP_HOST"];
+	if (isset($_SERVER["HTTP_HOST"])) 	$array['domain']	=$_SERVER["HTTP_HOST"];
 	if (isset($_SERVER["REQUEST_METHOD"])) 	$array['method']	=$_SERVER["REQUEST_METHOD"];
 	if (isset($_SERVER["QUERY_STRING"]) &&  
-		$_SERVER["QUERY_STRING"]!='') 		$array['get']		=$_SERVER["QUERY_STRING"];
+		$_SERVER["QUERY_STRING"]!='') 	$array['get']		=$_SERVER["QUERY_STRING"];
 
 	$data=file_get_contents("php://input");
 	if ($data!='') $array['post']=$data;
@@ -38,6 +38,8 @@ if(!file_exists($file))
 	die();
 } 
 
+// Clear
+
 if (isset($_GET['clear']) && $_GET['clear']=='1')
 {
 	unlink($file);
@@ -45,14 +47,14 @@ if (isset($_GET['clear']) && $_GET['clear']=='1')
 	die();
 }
 
-// parse
+// Parse
 
 $obj=file_get_contents($file);
 $obj='{"data":['.$obj.']}';
 $obj=json_decode($obj);
 //$obj->data=array_reverse($obj->data);
 
-// output
+// Output
 
 if (isset($_GET['out']) && ($_GET['out']=='json'|| $_GET['out']=='json_data'))
 	{
