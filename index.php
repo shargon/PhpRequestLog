@@ -32,7 +32,18 @@ if(!isset($_GET['secret']) || $_GET['secret']!='owned')	// Secret Password
 	die();
 }
 // Viewer
-if(!file_exists($file)) die();
+if(!file_exists($file))
+{
+	echo 'No data ...';
+	die();
+} 
+
+if (isset($_GET['clear']) && $_GET['clear']=='1')
+{
+	unlink($file);
+	header('Location: ?secret='.$_GET['secret']);
+	die();
+}
 
 // parse
 
@@ -113,6 +124,7 @@ else
 	            </tr>
 	        </tfoot>
 	    </table>
+	    <a href='?secret=<?php echo $_GET['secret']; ?>&clear=1'>Clear log</a>
 	</body>
 <?php
 }
