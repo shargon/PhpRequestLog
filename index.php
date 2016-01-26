@@ -5,7 +5,7 @@ $file='log.txt';
 if(!isset($_GET['secret']) || $_GET['secret']!='owned') // view password
 {
 	// Log it!
-	$file=fopen('log.txt','a+');
+	$file=fopen($file,'a+');
 
 	$array = array
 	( 
