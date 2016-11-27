@@ -1,13 +1,82 @@
 <?php
-$file='log.txt';	// Log File
+// Debug
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 
-if(!isset($_GET['secret']) || $_GET['secret']!='owned')	// Secret Password
+function CheckLogin()
+{
+	return isset($_GET['secret'])  &&  $_GET['secret']== 'owned';
+}
+// MYSQL STORE MODE ***************************************************************************************
+//  CREATE TABLE logs.requestLogs(DATA JSON);
+function Connect()
+{
+	$link = new mysqli('127.0.0.1','root','','logs',3306);
+	if($link->connect_error)
+		die('');
+
+	return $link;
+}
+function StoreData(&$array)
+{
+	$link=Connect();
+	$link->query('INSERT INTO requestLogs(DATA)VALUES("'.$link->real_escape_string(json_encode($array)).'")');
+	$link->close();
+}
+function ClearData()
+{
+	$link=Connect();
+	$link->query('TRUNCATE TABLE requestLogs');
+	$link->close();
+}
+function GetData()
+{
+	$link=Connect();
+	$res=$link->query('SELECT DATA from requestLogs');
+	$ret=array();
+
+	while($row=$res->fetch_assoc())
+		$ret[]=json_decode($row['DATA']);
+
+	$res->free();
+	$link->close();
+	return $ret;
+}
+// FILE STORE MODE ****************************************************************************************
+/*
+function StoreData(&$array)
+{
+	$file='log.txt';
+
+	$file=fopen($file,'a+');
+	fseek($file,0,SEEK_END);
+	if(ftell($file)>0) fwrite($file,",\n");
+	fwrite($file,json_encode($array));
+	fclose($file);
+}
+function ClearData()
+{
+	$file='log.txt';
+	unlink($file);
+}
+function GetData()
+{
+	$file='log.txt';
+	if(!file_exists($file)) return NULL;
+
+	$ret=file_get_contents($file);
+	$ret=json_decode('['.$ret.']');
+	return $ret;
+}
+*/
+// ********************************************************************************************************
+
+if(!CheckLogin())
 {
 	// Log it!
-	$file=fopen($file,'a+');
-
 	$array = array
-	( 
+	(
 		'date'	=> date("Y-m-d H:i:s"),
 		'time'	=> time(),
 	);
@@ -18,44 +87,39 @@ if(!isset($_GET['secret']) || $_GET['secret']!='owned')	// Secret Password
 	if (isset($_SERVER["HTTP_REFERER"])) 	$array['referer']	=$_SERVER["HTTP_REFERER"];
 	if (isset($_SERVER["HTTP_HOST"])) 	$array['domain']	=$_SERVER["HTTP_HOST"];
 	if (isset($_SERVER["REQUEST_METHOD"])) 	$array['method']	=$_SERVER["REQUEST_METHOD"];
-	if (isset($_SERVER["QUERY_STRING"]) &&  
+	if (isset($_SERVER["QUERY_STRING"]) &&
 		$_SERVER["QUERY_STRING"]!='') 	$array['get']		=$_SERVER["QUERY_STRING"];
 
 	$data=file_get_contents("php://input");
 	if ($data!='') $array['post']=$data;
-
-	fseek($file,0,SEEK_END);
-	if(ftell($file)>0) fwrite($file,",\n");
-	fwrite($file,json_encode($array));
-
-	fclose($file);
+	StoreData($array);
 	die();
 }
-// Viewer
-if(!file_exists($file))
-{
-	echo 'No data ...';
-	die();
-} 
 
 // Clear
-
 if (isset($_GET['clear']) && $_GET['clear']=='1')
 {
-	unlink($file);
+	ClearData();
 	header('Location: ?secret='.$_GET['secret']);
 	die();
 }
 
 // Parse
+$obj=GetData();
+if($obj==NULL || $obj=='')
+	{
+	// Viewer
+	$obj='[]';
+	echo 'No data ...';
+	die();
+	}
+else
+	$obj=json_encode($obj);
 
-$obj=file_get_contents($file);
-$obj='{"data":['.$obj.']}';
+$obj='{"data":'.$obj.'}';
 $obj=json_decode($obj);
-//$obj->data=array_reverse($obj->data);
 
 // Output
-
 if (isset($_GET['out']) && ($_GET['out']=='json'|| $_GET['out']=='json_data'))
 	{
 	header('Content-type: application/json');
